@@ -38,5 +38,5 @@ in *UDPClient.java* and *UDPServer.java*.
 Each of the client and server program can be tested independently by
 making use **nc** command line tool. Use the option **-u** to run
 **nc** with UDP Sockets. To use this tool as server, use the option
-**-l <port>** and to use it as client, just provide server's IP
-address and port number e.g. **nc -u <serverIP> <ServerPort>**.
+**-l \<port\>** and to use it as client, just provide server's IP
+address and port number e.g. **nc -u \<serverIP\> \<ServerPort\>**.
