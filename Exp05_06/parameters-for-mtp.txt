@@ -1,0 +1,71 @@
+mtp.tcl
+------------
+
+GPRS
+=====
+# good radio conditions
+# U is for Uniform Distribution, E is for Exponential distribution.
+
+ns mtp.tcl
+-type gprs \ # network topology and characteristics of GPRS
+-allocLenDL ‘U(0.16,0.19)‘ \ # time to allocate a channel (in downlink)
+-allocHoldDL ‘U(2,5)‘ \ # time of holding the channel without traffic
+-allocLenUL ‘U(0.5,0.6)‘ \
+-allocHoldUL ‘U(0.01,0.4)‘
+
+#Reasonable range of parameters:
+-bwUL 10-20 kb # bandwidth of downlink channel in kbps
+-bwDL 20-50 kb
+
+-------------------------------
+#moderate radio conditions
+-delayInt ’E(0.1)’ \ # distribution of interval between delays
+-delayLen ’E(0.1)’ # distribution of delay duration
+
+Reasonable range of parameters:
+-delayInt 0.05-1
+-delayLen 0.05-0.2
+
+-------------------------------
+#Poor radio conditions
+-delayInt ’E(0.3)’ \
+-delayLen ’E(0.3)’ \
+-errRateUL 0.1 \ # packet loss rate due to errors in uplink
+-errBurstUL 0.3 \ # coefficient 0..1 of how bursty errors are
+-errSlotUL 3 \ # time in sec of a period with low loss rate
+-errRateDL 0.01
+-errBurstDL 0.3
+-errSlotDL 3
+
+Reasonable range of parameters:
+-delayInt 0.05-0.5
+-delayLen 0.05-1
+-errRateDL 0-0.2
+-errBurstDL 0-0.7
+-errRateUL 0-0.2
+-errBurstUL 0-0.7
+
+-------------------------------
+# Mobility
+-vhoTarget gprs\# type of network after a handover
+-vhoDelay 5 \ # duration of handover in seconds
+-vhoLoss 0.5 # fraction of packets lost during a handover
+
+Reasonable range of parameters:
+-vhoDelay 0-10 s
+-vhoLoss 0-1
+
+-------------------------------
+#WLAN
+-type wlan_complex\
+-bwDL 1Mb
+
+Reasonable range of parameters:
+-bwDL 1-11 Mb
+-------------------------------
+
+-------------------------------
+
+-------------------------------
+
+-------------------------------
