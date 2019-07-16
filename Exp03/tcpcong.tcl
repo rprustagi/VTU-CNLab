@@ -1,13 +1,23 @@
+# all procedures
+# Define a 'finish' procedure
+proc finish { } {
+  global ns nf tf 
+  $ns flush-trace
+  close $tf
+  close $nf
+  exit 0
+}
+
 #Make a NS simulator
 set ns [new Simulator]
-set tfile tcpcong.tr
-set nfile tcpcong.nam
+set tfile "tcpcong.tr"
+set nfile "tcpcong.nam"
 
 # experiment parmaters
 set numconn 3
-set conntime 200
+set conntime 150
 #get in seconds for next connection to start.
-set conngap 10
+set conngap 15
 
 # topology parameters
 set lanbw 100Mb
@@ -18,22 +28,13 @@ set qlimit 10
 
 # TCP config params
 set tcppktsize 1460
-set cwindow 40
+set cwindow 50
+set TCPtype "Reno"
 
 puts "Application Runtime parameters are:"
 puts "numconn=$numconn, ConnTime=$conntime, conngap=$conngap, InitalCwnd=$cwindow"
 puts "LanBW=$lanbw, LanProp=$landelay"
 puts "WanBW=$wanbw, WanProp=$wandelay, WanQ=$qlimit"
-
-# Define a 'finish' procedure
-proc finish { } {
-  global ns nf tf 
-  $ns flush-trace
-  close $tf
-  close $nf
-  #exec nam $nf &
-  exit 0
-}
 
 set tf [open $tfile w]
 set nf [open $nfile w]
@@ -67,13 +68,13 @@ set lan1last [expr $lannodes - 1]
 set lan2last [expr $lannodes + $lannodes - 1]
 puts "lan1last = n$lan1last, lan2last = n$lan2last"
 
-#Creates two lans each of 3 nodes and connect them via WAN link
+#Creates two lans each of n nodes and connect them via WAN link
 $ns make-lan "$lan1list" $lanbw $landelay LL Queue/DropTail Mac/802_3
 $ns make-lan "$lan2list" $lanbw $landelay LL Queue/DropTail Mac/802_3
 #LanRouter set debug_ 0
 
 # Create the link
-puts "Creating link between lan1 last node n$lan1last, and lan2 first node n$lannodes"
+puts "link between lan1 last node n$lan1last, and lan2 first node n$lannodes"
 $ns duplex-link [set n[set lan1last]] [set n[set lannodes]] $wanbw $wandelay DropTail
 $ns queue-limit [set n[set lan1last]] [set n[set lannodes]] $qlimit
 
@@ -82,11 +83,10 @@ Agent/TCP set packetSize_ $tcppktsize
 Agent/TCP set window_ $cwindow
 
 # Add a TCP sending module to node n0
-#set endtime [expr $numconn * $conntime]
 set endtime $conntime
 
 for {set conn 0} {$conn < $numconn} {incr conn} {
-  set tcpsrc$conn [new Agent/TCP/Reno]
+  set tcpsrc$conn [new Agent/TCP/$TCPtype]
   set tcpsnk$conn [new Agent/TCPSink]
   puts "Created tcp connection endpoints tcpsrc$conn, and tcpsnk$conn"
 
