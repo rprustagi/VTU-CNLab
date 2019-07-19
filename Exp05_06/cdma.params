@@ -1,0 +1,17 @@
+# Topology
+set type cdma;  #type of link:
+
+set allocDelayDLAvg ""; # Avg time to allocate a downlink channel
+set allocHoldDLAvg  ""; # Avg time to hold a downlink channel
+
+set allocDelayULAvg ""; #Avg time to allocate a uplink channel
+set allocHoldULAvg  ""; # Avg time to hold a uplink channel
+
+#default downlink/uplink bandwidth in bps
+set bwDL($type) 384000
+set bwUL($type) 64000
+
+#default downlink/uplink propagation delay in seconds 
+set propDL($type) 150ms
+set propUL($type) 150ms
+

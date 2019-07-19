@@ -1,0 +1,16 @@
+
+#GSM params
+set type gsm;  #type of link:
+
+set allocDelayDLAvg 0.17;	# Avg time to allocate a downlink channel
+set allocHoldDLAvg  3;	# Avg time to hold a downlink channel
+
+set allocDelayULAvg 0.5;	# Avg time to allocate a uplink channel
+set allocHoldULAvg  0.2;	# Avg time to hold a uplink channel
+
+set bwDL($type) 9600
+set bwUL($type) 9600
+
+set propDL($type) 500ms
+set propUL($type) 500ms
+

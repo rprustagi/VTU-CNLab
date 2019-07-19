@@ -1,21 +1,20 @@
+if {$argc != 1} {
+  puts "Please specify output file prefix as first argument"
+  exit
+} else {
+  set prefix [lindex $argv 0]
+}
+
 set stoptime 100;  # Stop time.
 
 # Topology
-set type gsm;  #type of link:
+source ./$prefix.params
 
 # Active Queue Mgmt (AQM parameters)
 set minthresh 30
 set maxthresh 0
 set adaptive 1;  # 1 for Adaptive RED, 0 for plain RED
-#
-set allocDelayDLAvg 0.17;	# Avg time to allocate a downlink channel
-set allocHoldDLAvg  3;	# Avg time to hold a downlink channel
 
-set allocDelayULAvg 0.5;	# Avg time to allocate a uplink channel
-set allocHoldULAvg  0.2;	# Avg time to hold a uplink channel
-#
-#set delayLen 0.3;	# duration of delay
-#set delayInt 0.3;	# Interval between delays
 set delayLen ""
 set delayInt ""
 
@@ -27,19 +26,13 @@ set opt(wrap) $stoptime;   # wrap plots?
 set opt(srcTrace) isp;   # where to plot traffic
 set opt(dstTrace) bs;   # where to plot traffic
 
-#default downlink/uplink bandwidth in bps
-set bwDL(gsm) 9600
-set bwUL(gsm) 9600
-#default downlink/uplink propagation delay in seconds
-set propDL(gsm) 500ms
-set propUL(gsm) 500ms
 # queue size
-set ql(gsm) 10
+set ql($type) 10
 
 set ns [new Simulator]
-set tf [open gsm.tr w]
+set tf [open $prefix.tr w]
 $ns trace-all $tf
-set nf [open gsm.nam w]
+set nf [open $prefix.nam w]
 $ns namtrace-all $nf
 
 set nodes(isp) [$ns node]
@@ -51,7 +44,7 @@ $nodes(bs) label "bs"
 set nodes(lp) [$ns node]
 $nodes(lp) label "lp"
 
-puts "GSM Cell Topology"
+puts "$prefix Cell Topology"
 
 
 # RED and TCP parameters
@@ -84,28 +77,31 @@ $ns duplex-link $nodes(ms) $nodes(bs) 1 1 RED
 $ns duplex-link $nodes(bs) $nodes(isp) 3Mbps 50ms DropTail
 
 #set_link_params 
-$ns bandwidth $nodes(bs) $nodes(ms) $bwDL(gsm) simplex
-$ns bandwidth $nodes(ms) $nodes(bs) $bwUL(gsm) simplex
-$ns delay $nodes(bs) $nodes(ms) $propDL(gsm) simplex
-$ns delay $nodes(ms) $nodes(bs) $propUL(gsm) simplex
-$ns queue-limit $nodes(bs) $nodes(ms) $ql(gsm)
+$ns bandwidth $nodes(bs) $nodes(ms) $bwDL($type) simplex
+$ns bandwidth $nodes(ms) $nodes(bs) $bwUL($type) simplex
+$ns delay $nodes(bs) $nodes(ms) $propDL($type) simplex
+$ns delay $nodes(ms) $nodes(bs) $propUL($type) simplex
+$ns queue-limit $nodes(bs) $nodes(ms) $ql($type)
 set delayerDL [new Delayer]
 set delayerUL [new Delayer]
 $ns insert-delayer $nodes(bs) $nodes(ms) $delayerDL
 $ns insert-delayer $nodes(ms) $nodes(bs) $delayerUL
 
-set al_dl [new RandomVariable/Exponential]
-$al_dl set avg_ $allocDelayDLAvg
-set ah_dl [new RandomVariable/Exponential]
-$ah_dl set avg_ $allocHoldDLAvg
+if {$allocDelayDLAvg != "" && $allocHoldDLAvg != ""} {
+  set al_dl [new RandomVariable/Exponential]
+  $al_dl set avg_ $allocDelayDLAvg
+  set ah_dl [new RandomVariable/Exponential]
+  $ah_dl set avg_ $allocHoldDLAvg
+  $delayerDL alloc $ah_dl $al_dl
+}
 #
-set al_ul [new RandomVariable/Exponential]
-$al_ul set avg_ $allocDelayULAvg
-set ah_ul [new RandomVariable/Exponential]
-$ah_ul set avg_ $allocHoldULAvg
-
-$delayerDL alloc $ah_dl $al_dl
-$delayerUL alloc $ah_ul $al_ul
+if {$allocDelayULAvg != "" && $allocHoldULAvg != ""} {
+  set al_ul [new RandomVariable/Exponential]
+  $al_ul set avg_ $allocDelayULAvg
+  set ah_ul [new RandomVariable/Exponential]
+  $ah_ul set avg_ $allocHoldULAvg
+  $delayerUL alloc $ah_ul $al_ul
+}
 
 proc insertDelay {} {
   global dist_len dist_int delayerDL delayerUL ns
@@ -133,20 +129,20 @@ set ftp1 [[set tcp1] attach-app FTP]
 $ns at 1.0 "[set ftp1] start"
 
 proc stop {} {
-    global nodes opt tf
+    global nodes opt tf prefix
     set wrap $opt(wrap)
     set sid [$nodes($opt(srcTrace)) id]
     set did [$nodes($opt(dstTrace)) id]
-    #set a "gsm.tr"
 
     set GETRC "~/bin/getrc"
     set RAW2XG "~/bin/raw2xg"
 
-    exec $GETRC -s $sid -d $did -f 0 gsm.tr | \
-    $RAW2XG -s 0.01  -q > gsmplot.xgr
-    exec $GETRC -s $did -d $sid -f 0 gsm.tr | \
-    $RAW2XG -a -s 0.01 -q >> gsmplot.xgr
-    exec xgraph -t GSM -x time -y packets gsmplot.xgr &
+    # need to run here to use sid and did variables
+    exec $GETRC -s $sid -d $did -f 0 $prefix.tr | \
+    $RAW2XG -s 0.01  -q > [set prefix]plot.xgr
+    exec $GETRC -s $did -d $sid -f 0 $prefix.tr | \
+    $RAW2XG -a -s 0.01 -q >> [set prefix]plot.xgr
+    #exec xgraph -t $prefix -x time -y packets [set prefix]plot.xgr &
 
     exit 0
 }
