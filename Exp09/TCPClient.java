@@ -1,4 +1,4 @@
-// Exp 09 - TCP Server (File reader and responder)
+// Exp 09 - TCP Client (File requestor and receiver)
 import java.io.*;
 import java.nio.*; // for binary files
 import java.net.*;
@@ -21,7 +21,7 @@ public class TCPClient {
 
     // Validation check of command line arguments
     if (args.length < 3) {
-        System.out.println("Usage: TCPClient.java <serverIP> <Serverport> <file1> <file2> ...");
+        System.out.println("Usage: java TCPClient <serverIP> <Serverport> <file1> <file2> ...");
         System.exit(1);
     }
     // get the port from command line and create connection to server
@@ -46,7 +46,7 @@ public class TCPClient {
 
       // send filename to server
       printwriter.println(filename);
-      // read the content of file and send the same.
+      // receive the content of file 
       sockReader =
         new BufferedReader(new InputStreamReader(istream));
       linecontent = sockReader.readLine();
@@ -56,7 +56,7 @@ public class TCPClient {
       }
       tmpfile = new File(filename);
       tmpdir = tmpfile.getParentFile();
-      if (! tmpdir.exists()) {
+      if ((tmpdir != null) && (! tmpdir.exists())) {
         tmpdir.mkdirs();
       }
       filewriter = new PrintWriter(tmpfile);
@@ -64,6 +64,7 @@ public class TCPClient {
       do {
         filewriter.println(linecontent);
       }while((linecontent = sockReader.readLine()) !=  null);
+      System.out.println("File " + filename + " received from server");
 
       printwriter.close();
       sockReader.close();

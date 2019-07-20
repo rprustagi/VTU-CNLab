@@ -45,6 +45,7 @@ public class TCPServer {
       PrintWriter pwrite = new PrintWriter(ostream, true);
 
       filename = sockReader.readLine( );
+      System.out.println("Request from Filename: " + filename );
       // Check if file exists. If not send the error -1
       tmpfile = new File(filename);
       if (! tmpfile.exists() ) {
@@ -54,6 +55,7 @@ public class TCPServer {
         continue;
       }
       // read the content of file and send the same.
+      System.out.println("File " + filename + " exists, sending the same" );
       fileReader =
         new BufferedReader(new FileReader(filename) );
       String str;
